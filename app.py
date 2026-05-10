@@ -432,6 +432,7 @@ def delete_order(id):
         db.execute("DELETE FROM Orders WHERE id=?",(id,))
     flash("Order deleted.","warning"); return redirect(url_for("orders"))
 
+init_db()
+
 if __name__ == "__main__":
-    init_db()
     app.run(debug=True)
