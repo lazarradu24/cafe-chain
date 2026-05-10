@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %} – {{ 'Edit' if cafe else 'Add' }} Café{% endblock %}
+{% block content %}
+<h1>{{ 'Edit' if cafe else 'Add' }} Café</h1>
+<div class="card" style="max-width:520px">
+  <form method="POST">
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Café Name</label>
+        <input name="name" type="text" value="{{ cafe.name if cafe else '' }}" required>
+      </div>
+      <div class="form-group full">
+        <label>Address</label>
+        <input name="address" type="text" value="{{ cafe.address if cafe else '' }}" required>
+      </div>
+      <div class="form-group">
+        <label>Number of Seats</label>
+        <input name="seat_number" type="number" min="1" value="{{ cafe.seat_number if cafe else '' }}" required>
+      </div>
+    </div>
+    <div style="margin-top:1.2rem;display:flex;gap:.7rem">
+      <button type="submit" class="btn btn-primary">{{ 'Save Changes' if cafe else 'Add Café' }}</button>
+      <a href="{{ url_for('cafes') }}" class="btn" style="background:#eee">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

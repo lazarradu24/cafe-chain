@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %} – Dashboard{% endblock %}
+{% block content %}
+<h1>Welcome, {{ emp.name if emp else u.username }}</h1>
+
+{% if emp %}
+<div class="cafe-banner">
+  <div class="cafe-name">{{ emp.cafe_name }}</div>
+  <div class="cafe-meta">{{ emp.cafe_address }} &nbsp;·&nbsp; {{ emp.seat_number }} seats &nbsp;·&nbsp; {{ emp.position }}</div>
+</div>
+{% endif %}
+
+<div class="stats">
+  <div class="stat-card">
+    <div class="num">{{ my_stats.my_orders }}</div>
+    <div class="lbl">My Orders</div>
+  </div>
+  <div class="stat-card highlight">
+    <div class="num">{{ "%.0f"|format(my_stats.my_revenue) }}</div>
+    <div class="lbl">My Revenue (EUR)</div>
+  </div>
+  <div class="stat-card">
+    <div class="num">{{ my_stats.open_orders }}</div>
+    <div class="lbl">Open Orders</div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <div class="toolbar">
+      <h2>My Recent Orders</h2>
+      <a href="{{ url_for('add_order') }}" class="btn btn-primary btn-sm">New Order</a>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Date</th><th>Status</th><th>Items</th><th>Total</th><th></th></tr></thead>
+        <tbody>
+          {% for o in emp_orders %}
+          <tr>
+            <td>{{ o.id }}</td>
+            <td>{{ o.date }}</td>
+            <td><span class="badge badge-{{ o.state }}">{{ o.state }}</span></td>
+            <td>{{ o.items }}</td>
+            <td>{{ "%.2f"|format(o.total) }} EUR</td>
+            <td>
+              <a href="{{ url_for('edit_order', id=o.id) }}" class="btn btn-sm btn-edit">Edit</a>
+              <a href="{{ url_for('delete_order', id=o.id) }}" class="btn btn-sm btn-danger"
+                 onclick="return confirm('Delete this order?')">Delete</a>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6" style="text-align:center;color:var(--muted)">No orders yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:1rem">
+    <div class="card">
+      <h2>Menu &amp; Stock</h2>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Item</th><th>Category</th><th>Price</th><th>Stock</th></tr></thead>
+          <tbody>
+            {% for item in cafe_menu %}
+            <tr>
+              <td>{{ item.name }}</td>
+              <td style="color:var(--muted);font-size:.82rem">{{ item.category }}</td>
+              <td>{{ "%.2f"|format(item.price) }}</td>
+              <td>{% if item.stock < 20 %}<span class="badge badge-low">{{ item.stock }}</span>{% else %}{{ item.stock }}{% endif %}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" style="text-align:center;color:var(--muted)">No items on menu.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% if colleagues %}
+    <div class="card">
+      <h2>Colleagues</h2>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Position</th></tr></thead>
+          <tbody>
+            {% for c in colleagues %}
+            <tr><td>{{ c.name }}</td><td style="color:var(--muted)">{{ c.position }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

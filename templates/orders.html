@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %} – Orders{% endblock %}
+{% block content %}
+<div class="toolbar">
+  <h1>{{ 'All Orders' if u.role == 'admin' else 'My Orders' }}</h1>
+  <a href="{{ url_for('add_order') }}" class="btn btn-primary">+ New Order</a>
+</div>
+<div class="card">
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>Date</th><th>Status</th>
+          {% if u.role == 'admin' %}<th>Café</th><th>Employee</th>{% endif %}
+          <th>Items</th><th>Total (€)</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for o in orders %}
+        <tr>
+          <td>{{ o.id }}</td>
+          <td>{{ o.date }}</td>
+          <td><span class="badge badge-{{ o.state }}">{{ o.state }}</span></td>
+          {% if u.role == 'admin' %}
+          <td>{{ o.cafe_name }}</td>
+          <td>{{ o.emp_name }}</td>
+          {% endif %}
+          <td>{{ o.item_count }}</td>
+          <td><strong>€{{ "%.2f"|format(o.total) }}</strong></td>
+          <td>
+            <a href="{{ url_for('edit_order', id=o.id) }}" class="btn btn-sm btn-edit">Edit</a>
+            <a href="{{ url_for('delete_order', id=o.id) }}" class="btn btn-sm btn-danger"
+               onclick="return confirm('Delete order #{{ o.id }}?')">Delete</a>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9" style="text-align:center;color:#aaa">No orders found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

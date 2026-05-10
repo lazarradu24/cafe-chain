@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %} – Create Account{% endblock %}
+{% block content %}
+<h1>Create Account</h1>
+
+<div style="background:#faf6f1;border:1px solid #ddd0c4;border-radius:8px;padding:1rem 1.2rem;margin-bottom:1.4rem;max-width:520px">
+  <p style="font-size:.82rem;font-weight:600;color:#7a6652;margin-bottom:.4rem">Creating account for</p>
+  <p style="font-size:1.05rem;font-weight:700;color:#5c3317">{{ emp.name }}</p>
+  <p style="font-size:.88rem;color:#7a6652">{{ emp.position }} · {{ emp.cafe_name }}</p>
+</div>
+
+<div class="card" style="max-width:520px">
+  <form method="POST">
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Username</label>
+        <input name="username" type="text" required autocomplete="off"
+               placeholder="e.g. {{ emp.name.split()[0].lower() }}">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input name="password" type="password" required autocomplete="new-password">
+      </div>
+      <div class="form-group">
+        <label>Confirm Password</label>
+        <input name="password2" type="password" required autocomplete="new-password">
+      </div>
+    </div>
+    <div style="margin-top:1.2rem;display:flex;gap:.7rem">
+      <button type="submit" class="btn btn-primary">Create Account</button>
+      <a href="{{ url_for('employees') }}" class="btn" style="background:#eee">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

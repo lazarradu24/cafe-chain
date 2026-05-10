@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %} – Dashboard{% endblock %}
+{% block content %}
+<h1>Dashboard</h1>
+
+<div class="stats">
+  <div class="stat-card highlight">
+    <div class="num">{{ "%.0f"|format(stats.revenue) }}</div>
+    <div class="lbl">Revenue (EUR)</div>
+  </div>
+  <div class="stat-card">
+    <div class="num">{{ stats.orders }}</div>
+    <div class="lbl">Total Orders</div>
+  </div>
+  <div class="stat-card">
+    <div class="num">{{ stats.pending }}</div>
+    <div class="lbl">Open Orders</div>
+  </div>
+  <div class="stat-card">
+    <div class="num">{{ stats.cafes }}</div>
+    <div class="lbl">Cafes</div>
+  </div>
+  <div class="stat-card">
+    <div class="num">{{ stats.employees }}</div>
+    <div class="lbl">Employees</div>
+  </div>
+  <div class="stat-card {% if stats.low_stock > 0 %}highlight{% endif %}">
+    <div class="num">{{ stats.low_stock }}</div>
+    <div class="lbl">Low Stock Items</div>
+  </div>
+</div>
+
+<div class="grid-2" style="margin-bottom:1.1rem">
+  <div class="card">
+    <h2>Revenue by Cafe</h2>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Cafe</th><th>Revenue (EUR)</th></tr></thead>
+        <tbody>
+          {% for row in revenue_by_cafe %}
+          <tr><td>{{ row.name }}</td><td><strong>{{ "%.2f"|format(row.rev) }}</strong></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Low Stock</h2>
+    {% if low_stock %}
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Product</th><th>Cafe</th><th>Stock</th><th>Action</th></tr></thead>
+        <tbody>
+          {% for p in low_stock %}
+          <tr>
+            <td>{{ p.name }}</td>
+            <td style="color:var(--muted);font-size:.82rem">{{ p.cafe_name }}</td>
+            <td><span class="badge badge-low">{{ p.stock }}</span></td>
+            <td>
+              <form method="POST" action="{{ url_for('refill_stock') }}" style="display:inline">
+                <input type="hidden" name="cafe_id" value="{{ p.cafe_id }}">
+                <input type="hidden" name="product_id" value="{{ p.product_id }}">
+                <button type="submit" class="btn btn-sm btn-refill">Refill +100</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p style="color:var(--muted);font-size:.88rem">All products are adequately stocked.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:1.1rem">
+  <h2>Stock Overview by Cafe</h2>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Cafe</th><th>Products on Menu</th><th>Total Units</th><th>Low Stock Items</th><th></th></tr></thead>
+      <tbody>
+        {% for row in cafe_stock_summary %}
+        <tr>
+          <td><strong>{{ row.name }}</strong></td>
+          <td>{{ row.product_count }}</td>
+          <td>{{ row.total_stock }}</td>
+          <td>
+            {% if row.low_items > 0 %}
+              <span class="badge badge-low">{{ row.low_items }}</span>
+            {% else %}
+              <span style="color:#065f46;font-size:.82rem">OK</span>
+            {% endif %}
+          </td>
+          <td><a href="{{ url_for('cafe_menu', cafe_id=row.id) }}" class="btn btn-sm btn-edit">Manage Menu</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <div class="toolbar">
+    <h2>Recent Orders</h2>
+    <a href="{{ url_for('add_order') }}" class="btn btn-primary btn-sm">New Order</a>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>#</th><th>Date</th><th>Cafe</th><th>Employee</th><th>Status</th><th>Total (EUR)</th></tr></thead>
+      <tbody>
+        {% for o in recent_orders %}
+        <tr>
+          <td>{{ o.id }}</td>
+          <td>{{ o.date }}</td>
+          <td>{{ o.cafe }}</td>
+          <td>{{ o.emp }}</td>
+          <td><span class="badge badge-{{ o.state }}">{{ o.state }}</span></td>
+          <td><strong>{{ "%.2f"|format(o.total) }}</strong></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" style="text-align:center;color:var(--muted)">No orders yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

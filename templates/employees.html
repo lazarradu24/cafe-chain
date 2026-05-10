@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %} – Employees{% endblock %}
+{% block content %}
+<div class="toolbar">
+  <h1>Employees</h1>
+  <a href="{{ url_for('add_employee') }}" class="btn btn-primary">Add Employee</a>
+</div>
+<div class="card">
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Name</th><th>Cafe</th><th>Position</th><th>Date of Birth</th><th>Salary (EUR)</th><th>Account</th><th></th></tr></thead>
+      <tbody>
+        {% for e in employees %}
+        <tr>
+          <td><strong>{{ e.name }}</strong></td>
+          <td>{{ e.cafe_name }}</td>
+          <td>{{ e.position }}</td>
+          <td>{{ e.date_of_birth }}</td>
+          <td>{{ "%.2f"|format(e.salary) }}</td>
+          <td>
+            {% if e.has_account %}
+              <span class="badge badge-completed">Active</span>
+            {% else %}
+              <a href="{{ url_for('create_account', employee_id=e.id) }}" class="btn btn-sm btn-edit">Create</a>
+            {% endif %}
+          </td>
+          <td style="display:flex;gap:.3rem">
+            <a href="{{ url_for('edit_employee', id=e.id) }}" class="btn btn-sm btn-edit">Edit</a>
+            <a href="{{ url_for('delete_employee', id=e.id) }}" class="btn btn-sm btn-danger"
+               onclick="return confirm('Delete {{ e.name }}?')">Delete</a>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" style="text-align:center;color:var(--muted)">No employees found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

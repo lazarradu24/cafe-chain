@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %} – {{ 'Edit' if order else 'New' }} Order{% endblock %}
+{% block content %}
+<h1>{{ 'Edit Order #' + order.id|string if order else 'New Order' }}</h1>
+<div class="card" style="max-width:640px">
+  <form method="POST" id="orderForm">
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Date</label>
+        <input name="date" type="date" value="{{ order.date if order else today }}" required>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select name="state" required>
+          {% for s in ['pending','in-progress','completed','cancelled'] %}
+          <option value="{{ s }}" {{ 'selected' if order and order.state == s }}>{{ s }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      {% if u.role == 'admin' %}
+      <div class="form-group">
+        <label>Café</label>
+        <select name="cafe_id" required>
+          {% for c in cafes %}
+          <option value="{{ c.id }}" {{ 'selected' if order and order.cafe_id == c.id }}>{{ c.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Employee</label>
+        <select name="employee_id" required>
+          {% for e in employees %}
+          <option value="{{ e.id }}" {{ 'selected' if order and order.employee_id == e.id }}>{{ e.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% endif %}
+    </div>
+
+    <div style="margin-top:1.2rem">
+      <label style="font-size:.82rem;font-weight:600;color:#7a6652;display:block;margin-bottom:.6rem">
+        Products
+      </label>
+      <div id="productRows">
+        {% if order_products %}
+          {% for op in order_products %}
+          <div class="product-row">
+            <select name="product_ids" class="prod-select" onchange="recalc()">
+              <option value="">— select —</option>
+              {% for p in products %}
+              <option value="{{ p.id }}" data-price="{{ p.price }}"
+                {{ 'selected' if p.id == op.product_id }}>
+                {{ p.name }} — €{{ "%.2f"|format(p.price) }}
+              </option>
+              {% endfor %}
+            </select>
+            <input name="quantities" type="number" min="1" value="{{ op.quantity }}"
+                   class="qty-input" onchange="recalc()">
+            <button type="button" onclick="removeRow(this)" class="btn btn-sm btn-danger">✕</button>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="product-row">
+            <select name="product_ids" class="prod-select" onchange="recalc()">
+              <option value="">— select —</option>
+              {% for p in products %}
+              <option value="{{ p.id }}" data-price="{{ p.price }}">
+                {{ p.name }} — €{{ "%.2f"|format(p.price) }}
+              </option>
+              {% endfor %}
+            </select>
+            <input name="quantities" type="number" min="1" value="1" class="qty-input" onchange="recalc()">
+            <button type="button" onclick="removeRow(this)" class="btn btn-sm btn-danger">✕</button>
+          </div>
+        {% endif %}
+      </div>
+      <button type="button" onclick="addRow()" class="btn btn-sm btn-accent" style="margin-top:.5rem">
+        + Add Product
+      </button>
+
+      <div style="margin-top:1rem;padding:.8rem 1rem;background:#faf6f1;border-radius:6px;
+                  display:flex;justify-content:space-between;align-items:center">
+        <span style="font-weight:600;color:#7a6652">Estimated Total</span>
+        <span id="totalDisplay" style="font-size:1.3rem;font-weight:700;color:#5c3317">€0.00</span>
+      </div>
+    </div>
+
+    <div style="margin-top:1.2rem;display:flex;gap:.7rem">
+      <button type="submit" class="btn btn-primary">{{ 'Save Changes' if order else 'Create Order' }}</button>
+      <a href="{{ url_for('orders') }}" class="btn" style="background:#eee">Cancel</a>
+    </div>
+  </form>
+</div>
+
+<script>
+const productData = {
+  {% for p in products %}
+  "{{ p.id }}": { price: {{ p.price }}, name: "{{ p.name }}" },
+  {% endfor %}
+};
+
+const optionsHTML = `
+  <option value="">— select —</option>
+  {% for p in products %}
+  <option value="{{ p.id }}" data-price="{{ p.price }}">{{ p.name }} — €{{ "%.2f"|format(p.price) }}</option>
+  {% endfor %}
+`;
+
+function addRow() {
+  const div = document.createElement('div');
+  div.className = 'product-row';
+  div.innerHTML = `
+    <select name="product_ids" class="prod-select" onchange="recalc()">${optionsHTML}</select>
+    <input name="quantities" type="number" min="1" value="1" class="qty-input" onchange="recalc()">
+    <button type="button" onclick="removeRow(this)" class="btn btn-sm btn-danger">✕</button>
+  `;
+  document.getElementById('productRows').appendChild(div);
+}
+
+function removeRow(btn) {
+  const rows = document.querySelectorAll('.product-row');
+  if (rows.length > 1) { btn.closest('.product-row').remove(); recalc(); }
+}
+
+function recalc() {
+  let total = 0;
+  document.querySelectorAll('.product-row').forEach(row => {
+    const sel = row.querySelector('.prod-select');
+    const qty = parseInt(row.querySelector('.qty-input').value) || 0;
+    const pid = sel.value;
+    if (pid && productData[pid]) total += productData[pid].price * qty;
+  });
+  document.getElementById('totalDisplay').textContent = '€' + total.toFixed(2);
+}
+
+recalc();
+</script>
+{% endblock %}

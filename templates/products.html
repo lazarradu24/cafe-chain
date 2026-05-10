@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %} – Products{% endblock %}
+{% block content %}
+<div class="toolbar">
+  <h1>{{ 'Product Catalog' if u.role == 'admin' else 'Menu' }}</h1>
+  {% if u.role == 'admin' %}
+  <a href="{{ url_for('add_product') }}" class="btn btn-primary">Add Product</a>
+  {% endif %}
+</div>
+{% if u.role == 'admin' %}
+<p style="color:var(--muted);font-size:.85rem;margin-bottom:1rem">Stock is managed per cafe. Use Cafes &rarr; Menu to set stock levels per location.</p>
+{% endif %}
+<div class="card">
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th><th>Category</th><th>Price (EUR)</th>
+          {% if u.role == 'admin' %}<th>Available at</th><th></th>
+          {% else %}<th>Stock</th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in products %}
+        <tr>
+          <td><strong>{{ p.name }}</strong></td>
+          <td style="color:var(--muted);font-size:.82rem">{{ p.category }}</td>
+          <td>{{ "%.2f"|format(p.price) }}</td>
+          {% if u.role == 'admin' %}
+          <td>{{ p.cafe_count }} cafe{{ 's' if p.cafe_count != 1 }}</td>
+          <td style="display:flex;gap:.3rem">
+            <a href="{{ url_for('edit_product', id=p.id) }}" class="btn btn-sm btn-edit">Edit</a>
+            <a href="{{ url_for('delete_product', id=p.id) }}" class="btn btn-sm btn-danger"
+               onclick="return confirm('Delete {{ p.name }}?')">Delete</a>
+          </td>
+          {% else %}
+          <td>{% if p.stock < 20 %}<span class="badge badge-low">{{ p.stock }}</span>{% else %}{{ p.stock }}{% endif %}</td>
+          {% endif %}
+        </tr>
+        {% else %}
+        <tr><td colspan="5" style="text-align:center;color:var(--muted)">No products found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
